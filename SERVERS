@@ -1,0 +1,37 @@
+-----------------
+lyon.rootnode.net 
+-----------------
+
+CPU: 2x Six-Core AMD Opteron 2427 2211.664 MHz 512 KB
+HDD: 4x SAS 15k 600G, RAID5 Adaptec
+RAM: 32GB ECC
+
+Usage
+ * Fastweb server for PHP web sites.
+ * No shell access for users.
+ * Storage exported via NFS to shell server (stallman2|korn: ~/fastweb)
+
+Software
+ * Nginx 
+ * PHP-FPM
+ * MySQL 
+ * Memcached
+
+-----------------
+wall.rootnode.net 
+-----------------
+
+CPU: 2x Six-Core AMD Opteron 2427 2211.664 MHz 512 KB
+HDD: 4x SAS 15k 600G, RAID5 Adaptec
+RAM: 32GB ECC
+
+Usage
+ * Fastweb server for Ruby and Python applications.
+ * No shell access for users.
+ * Storage exported via NFS to shell server (stallman2|korn: ~/ruby)
+
+Software
+ * Nginx
+ * Phusion Passenger
+ * MySQL 
+ * Memcached
