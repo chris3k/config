@@ -1,0 +1,8 @@
+Backup
+
+* Backup server always connects to a client, not vice versa.
+* Backup server uses root access on a client.
+* Authentication with password-less ssh keys.
+
+Backup made with an excellent rdiff-backup tool (http://www.nongnu.org/rdiff-backup/).
+
