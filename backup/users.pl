@@ -20,6 +20,9 @@ my $remove_older_than = '14D';
 # usage
 my $server_name = shift or die "Usage: $0 server_name\n";
 
+# interactive mode
+my $debug = ! system('tty -s');
+
 # db
 my $dbh = DBI->connect("dbi:mysql:rootnode;mysql_read_default_file=/root/.my.system.cnf",undef,undef,{ RaiseError => 1, AutoCommit => 1 });
 my $db_backup_users = $dbh->prepare('SELECT login FROM uids WHERE block=0 AND del=0');
@@ -45,33 +48,33 @@ sub check_backup {
 # create backup
 $db_backup_users->execute;
 while(my($user_name) = $db_backup_users->fetchrow_array) {
-        print $user_name.'...';
+        $debug and print $user_name.'...';
 
 	# check for current backup
 	if(check_backup($server_name, $user_name)) {
-		print "current\n";
+		$debug and print "current\n";
 		next;
 	}
 
         # rdiff-backup
         system("/bin/bash $rdiff $server_name $user_name");
-        print $? ? "error" : "done" . "\n";
+        $debug and print $? ? "error\n" : "done\n";
 	
-	# interrupted initial backup
+	# errors
 	if($? == 256) {
+		# interrupted initial backup
 		rmtree("$backup_dir/users/$user_name");
 	} elsif($?) {
+		# report error
 		print "$user_name (error $?)\n";
 	}
-	last;
 }
 
 # remove old users
 $db_remove_users->execute;
 while(my($user_name) = $db_remove_users->fetchrow_array) {
         if(-d "$backup_dir/users/$user_name") {        
-                print $user_name.' ';
-                rmtree("$backup_dir/users/$user_name") && print "removed\n";
+                rmtree("$backup_dir/users/$user_name");
         }       
 }
 
