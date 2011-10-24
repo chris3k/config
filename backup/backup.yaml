@@ -5,6 +5,16 @@
 # system: [ <client_server>, ... ]
 # users : [ <client_server>, ... ]
 
+# server list:
+# lyon, wall, esr, farmer, stallman(X), stallman2, korn, torvalds(X), 
+# cox, allison, draper(X), bernstein, t1, t2, t3, t4
+
 bernstein: 
   system: [ stallman2 ]
-  users:  [ stallman2 ]
+  users:  [ stallman2, venema ]
+
+lyon:
+  users:  [ wall ]
+
+#allison:
+#  system: [ cox, lyon, wall, stallman2, farmer, venema ]
