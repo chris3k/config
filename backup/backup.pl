@@ -8,8 +8,10 @@
 
 use warnings;
 use strict;
-use YAML qw(LoadFile Dump);
-use Data::Dumper;
+use 5.010;
+use DBI;
+use YAML qw(LoadFile);
+use File::Path qw(rmtree);
 
 # config
 my $config_file = 'backup.yaml';
