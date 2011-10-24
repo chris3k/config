@@ -53,7 +53,7 @@ fi
 # remove backup
 if [ $do_remove ] 
 then
-	/usr/bin/rdiff-backup -v0 --remove_older_than $remove_older_than $backup_path
+	/usr/bin/rdiff-backup -v0 --remove-older-than $remove_older_than $backup_path
 	exit;
 fi
 
