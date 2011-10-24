@@ -12,10 +12,12 @@ set -e
 # show usage
 [ $# -eq 0 ] && echo -e "Usage: $0 server_name [user_name]" && exit 1 
 
-# 
+# args 
 server_name=$1
 user_name=$2
 
+# dirs
+home_dir="/home"
 backup_dir="/backup"
 cd $backup_dir
 
@@ -37,7 +39,7 @@ case $backup_type in
 		;;
 	users ) 
 		destination_dir="$backup_dir/users"
-		rdiff_include="--include=/home/$user_name"
+		rdiff_include="--include=$home_dir/$user_name"
 esac
 
 # create directory
