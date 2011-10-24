@@ -25,8 +25,8 @@ my $debug = ! system('tty -s');
 
 # db
 my $dbh = DBI->connect("dbi:mysql:rootnode;mysql_read_default_file=/root/.my.system.cnf",undef,undef,{ RaiseError => 1, AutoCommit => 1 });
-my $db_backup_users = $dbh->prepare('SELECT login FROM uids WHERE block=0 AND del=0');
-my $db_remove_users = $dbh->prepare('SELECT login FROM uids WHERE del=1');
+my $db_backup_users = $dbh->prepare('SELECT login FROM uids WHERE block=0 AND del=0 ORDER BY login');
+my $db_remove_users = $dbh->prepare('SELECT login FROM uids WHERE del=1 ORDER BY login');
 
 sub check_backup {
 	my($server_name, $user_name) = @_;
