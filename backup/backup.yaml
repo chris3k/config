@@ -1,0 +1,10 @@
+# Backup servers configuration
+# 
+# Syntax:
+# <backup_server>:
+# system: [ <client_server>, ... ]
+# users : [ <client_server>, ... ]
+
+bernstein: 
+  system: [ stallman2 ]
+  users:  [ stallman2 ]
