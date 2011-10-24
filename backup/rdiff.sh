@@ -48,7 +48,12 @@ esac
 /usr/bin/rdiff-backup \
 	$rdiff_include \
 	--exclude=/* \
-root@$server_name.rootnode.net::/ $destination_dir
+	--exclude-device-files \
+	--exclude-fifos \
+	--exclude-sockets \
+	--exclude-if-present .nobackup \
+	--preserve-numerical-ids \
+root@$server_name.rootnode.net::/ $destination_dir 2>/dev/null
 
 # client side /root/.ssh/authorized_keys:
 # command="nice-n 19 /usr/bin/rdiff-backup --server --restrict-read-only /",from="IP ADDRESS HERE",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa SSH_KEY_HERE
