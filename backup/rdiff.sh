@@ -38,7 +38,7 @@ case $backup_type in
 			--include=/var/backups"
 		;;
 	users ) 
-		destination_dir="$backup_dir/users"
+		destination_dir="$backup_dir/users/$user_name/$server_name"
 		rdiff_include="--include=$home_dir/$user_name"
 esac
 
