@@ -72,6 +72,14 @@ then
 	exit;
 fi
 
+# set server specific options
+case $server_name in
+	cox )
+		home_dir="/home/mail"
+		rdiff_include_special="--include=/home/lists"
+		;;
+esac
+
 # set rdiff includes
 case $backup_type in 
 	system ) 
@@ -86,6 +94,8 @@ case $backup_type in
 		;;
 	users ) 
 		rdiff_include="--include=$home_dir/$user_name"
+		rdiff_include_special=""
+		;;
 esac
 
 # create directory
@@ -94,6 +104,7 @@ esac
 # create backup
 /usr/bin/rdiff-backup \
 	$rdiff_include \
+	$rdiff_include_special \
 	--exclude=/* \
 	--exclude-device-files \
 	--exclude-fifos \
