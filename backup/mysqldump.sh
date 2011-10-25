@@ -45,5 +45,5 @@ do
 		--add-drop-table \
 		--quick \
 		--quote-names \
-	$database > $database.sql
+	$database | gzip > $database.sql.gz
 done
