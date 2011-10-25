@@ -14,7 +14,9 @@ bernstein:
   users:  [ stallman2, venema ]
 
 lyon:
+  system: [ allison, wall ]
   users:  [ wall ]
 
-#allison:
-#  system: [ cox, lyon, wall, stallman2, farmer, venema ]
+allison:
+  system: [ lyon, esr, farmer, stallman2, korn, cox, bernstein ]
+  users:  [ lyon, cox ]
