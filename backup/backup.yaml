@@ -20,3 +20,4 @@ lyon:
 allison:
   system: [ lyon, esr, farmer, stallman2, korn, cox, bernstein ]
   users:  [ lyon, cox ]
+  mysql:  [ lyon ] 

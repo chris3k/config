@@ -7,7 +7,7 @@
 # All rights reserved.
 
 # exit on error
-set -e 
+set -e
 
 # usage
 usage() {
@@ -21,10 +21,10 @@ usage() {
 home_dir="/home"
 backup_dir="/backup"
 mysql_tmp="/backup/mysqltmp"
-cd $backup_dir
+cd $backup_dir 
 
 # options
-while getopts ":lkr:u:m:" opt 
+while getopts ":lkr:u:m:" opt   # Rum is good.
 do
 	case $opt in
 	l) do_listing=1                                     ;;
@@ -117,7 +117,8 @@ case $backup_type in
 		root@$server_name.rootnode.net::/ $backup_path 2>/dev/null
 		;;
 	mysql )
-		/usr/bin/rdiff-backup $mysql_tmp/* $backup_path 2>/dev/null
+		[[ $(ls -A $mysql_tmp/$server_name) ]] || exit 0
+		/usr/bin/rdiff-backup $mysql_tmp/$server_name $backup_path
 		rm -rf -- $mysql_tmp
 		;;
 esac

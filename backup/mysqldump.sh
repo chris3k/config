@@ -30,9 +30,12 @@ exclude_db=${exclude_db// /\',\'} # add quotes
 # dirs
 mysql_tmp="/backup/mysqltmp"
 
-[ -d $mysql_tmp ] || mkdir -p -m 700 $mysql_tmp
-cd $mysql_tmp
+# mysql tmp dir
+[ -d $mysql_tmp ] && rm -rf -- $mysql_tmp
+mkdir -p -m 700 $mysql_tmp/$server_name
+cd $mysql_tmp/$server_name
 
+# mysqldump
 for database in `mysql -h $server_name.rootnode.net -Nse "SELECT db FROM mysql.db WHERE db like 'my${uid}_%' AND db NOT IN ('$exclude_db')"`
 do
 	mysqldump \
