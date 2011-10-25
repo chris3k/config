@@ -59,7 +59,7 @@ then
 	hostname=`hostname --fqdn`
 	ssh_key=`cat /root/.ssh/id_rsa.pub`
 	cat <<EOF	
-command="nice-n 19 /usr/bin/rdiff-backup --server --restrict-read-only /", \
+command="nice -n 19 /usr/bin/rdiff-backup --server --restrict-read-only /",\
 from="$hostname",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty \
 $ssh_key
 EOF
