@@ -50,19 +50,6 @@ sub check_backup {
         return;
 }
 
-sub check_errors {
-	my($error_code,$backup_path) = @_;
-	
-	if($error_code == 256) {
-		# interrupted initial backup
-		rmtree($backup_path);
-	} elsif($error_code) {
-		return $error_code;
-	}
-	
-	return;
-}
-
 # system backups
 foreach my $server_name ( @{ $yaml->{$hostname}->{system} } ) {
 	$debug and print "system backup => $server_name...";
@@ -80,8 +67,8 @@ foreach my $server_name ( @{ $yaml->{$hostname}->{system} } ) {
 	$debug and print $? ? "error\n" : "done\n";
 
 	# errors
-	if(check_errors($?,$backup_path)) {
-		print "$server_name (error $?)\n";
+	if($?) {
+		print "$user_name \@$server_name (error $?)\n";
 	}
 	
 	# remove old backups
@@ -117,7 +104,7 @@ foreach my $server_name ( @{ $yaml->{$hostname}->{users} } ) {
 		$debug and print $? ? "error\n" : "done\n";
 
 		# errors
-		if(check_errors($?,$backup_path)) {
+		if($?) {
 			print "$user_name \@$server_name (error $?)\n";
 		}
 	}

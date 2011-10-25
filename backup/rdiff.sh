@@ -23,10 +23,11 @@ backup_dir="/backup"
 cd $backup_dir
 
 # options
-while getopts ":lr:u:m:" opt 
+while getopts ":lkr:u:m:" opt 
 do
 	case $opt in
 	l) do_listing=1                                     ;;
+	k) do_showkey=1                                     ;;
 	r) do_remove=1         ; remove_older_than=$OPTARG  ;;
 	u) backup_type="users" ; user_name=$OPTARG          ;;
 	m) backup_type="mysql" ; user_name=$OPTARG          ;; 
@@ -48,6 +49,20 @@ if [ $do_listing ]
 then
 	/usr/bin/rdiff-backup --parsable-output -l $backup_path 2>/dev/null | tail -1 | cut -d' ' -f1
 	exit;
+fi
+
+# show key
+if [ $do_showkey ]
+then
+	# client side /root/.ssh/authorized_keys files
+	[ ! -f "/root/.ssh/id_rsa.pub" ] && echo "No SSH key!" && exit 1
+	hostname=`hostname --fqdn`
+	ssh_key=`cat /root/.ssh/id_rsa.pub`
+	cat <<EOF	
+command="nice-n 19 /usr/bin/rdiff-backup --server --restrict-read-only /", \
+from="$hostname",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty \
+ssh-rsa $ssh_key
+EOF
 fi
 
 # remove backup
@@ -86,6 +101,3 @@ esac
 	--exclude-if-present .nobackup \
 	--preserve-numerical-ids \
 root@$server_name.rootnode.net::/ $backup_path 2>/dev/null
-
-# client side /root/.ssh/authorized_keys:
-# command="nice-n 19 /usr/bin/rdiff-backup --server --restrict-read-only /",from="IP ADDRESS HERE",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa SSH_KEY_HERE
