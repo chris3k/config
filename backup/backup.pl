@@ -68,7 +68,7 @@ foreach my $server_name ( @{ $yaml->{$hostname}->{system} } ) {
 
 	# errors
 	if($?) {
-		print "$user_name \@$server_name (error $?)\n";
+		print "$server_name (error $?)\n";
 	}
 	
 	# remove old backups
