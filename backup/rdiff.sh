@@ -11,7 +11,7 @@ set -e
 
 # usage
 usage() {
-	echo -e "Usage: $0 [ -l ] [ -r time_spec ] [ -u|-m user_name ] server_name" 
+	echo -e "Usage: $0 [ -l | -r time_spec ] [ -u|-m user_name ] server_name" 
 	exit 1	
 }
 
@@ -20,6 +20,7 @@ usage() {
 # dirs
 home_dir="/home"
 backup_dir="/backup"
+mysql_tmp="/backup/mysqltmp"
 cd $backup_dir
 
 # options
@@ -102,13 +103,21 @@ esac
 [ -d $backup_path ] || mkdir -p -m 700 $backup_path
 
 # create backup
-/usr/bin/rdiff-backup \
-	$rdiff_include \
-	$rdiff_include_special \
-	--exclude=/* \
-	--exclude-device-files \
-	--exclude-fifos \
-	--exclude-sockets \
-	--exclude-if-present .nobackup \
-	--preserve-numerical-ids \
-root@$server_name.rootnode.net::/ $backup_path 2>/dev/null
+case $backup_type in
+	system|users ) 
+		/usr/bin/rdiff-backup \
+			$rdiff_include \
+			$rdiff_include_special \
+			--exclude=/* \
+			--exclude-device-files \
+			--exclude-fifos \
+			--exclude-sockets \
+			--exclude-if-present .nobackup \
+			--preserve-numerical-ids \
+		root@$server_name.rootnode.net::/ $backup_path 2>/dev/null
+		;;
+	mysql )
+		/usr/bin/rdiff-backup $mysql_tmp/* $backup_path 2>/dev/null
+		rm -rf -- $mysql_tmp
+		;;
+esac

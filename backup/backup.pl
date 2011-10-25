@@ -11,29 +11,41 @@ use strict;
 use 5.010;
 use DBI;
 use YAML qw(LoadFile);
+use FindBin qw($Bin);
 use File::Path qw(rmtree);
 
 # config
-my $config_file = 'backup.yaml';
+my $config_file = shift || 'backup.yaml';
 -f $config_file or die "Config file not found!\n";
 my $yaml = YAML::LoadFile($config_file);
-my $rdiff = '/bin/bash /rootnode/config/backup/rdiff.sh';
-my $backup_dir = '/backup';
+
+my $rdiff     = '/bin/bash $Bin/rdiff.sh';
+my $mysqldump = '/bin/bash $Bin/mysqldump.sh';
+
+my $mysql_config = '/root/.my.system.cnf';
+my $backup_dir   = '/backup';
+
 my $remove_older_than = '14D';
+
 my $hostname = `hostname -s`;
 chomp $hostname;
 
 # interactive mode
 my $debug = ! system('tty -s');
+	
+# db
+my $dbh = DBI->connect("dbi:mysql:rootnode;mysql_read_default_file=$mysql_config",undef,undef,{ RaiseError => 1, AutoCommit => 1 });
+my $db_backup_users = $dbh->prepare('SELECT login, uid FROM uids WHERE block=0 AND del=0 ORDER BY login');
+my $db_remove_users = $dbh->prepare('SELECT login, uid FROM uids WHERE del=1 ORDER BY login');
 
 sub check_backup {
-        my($server_name, $user_name) = @_;
+        my($backup_type, $server_name, $user_name) = @_;
 	my $last_backup;
 
-	if(defined $user_name) {
-        	$last_backup = `$rdiff -l -u $user_name $server_name`;
-	} else {
-		$last_backup = `$rdiff -l $server_name`;
+	given($backup_type) [
+		when('system') { $last_backup = `$rdiff -l $server_name` }
+		when('users')  { $last_backup = `$rdiff -l -u $user_name $server_name` }
+		when('mysql')  { $last_backup = `$rdiff -l -m $user_name $server_name` }
 	}
         
 	chomp $last_backup;
@@ -54,10 +66,11 @@ sub check_backup {
 foreach my $server_name ( @{ $yaml->{$hostname}->{system} } ) {
 	$debug and print "system backup => $server_name...";
 
-	my $backup_path="$backup_dir/system/$server_name";
-	
+	my $backup_type='system';	
+	my $backup_path="$backup_dir/$backup_type/$server_name";
+
 	# check for current backup
-	if(check_backup($server_name)) {
+	if(check_backup($backup_type,$server_name)) {
 		$debug and print "current\n";
 		next;
 	}
@@ -72,7 +85,7 @@ foreach my $server_name ( @{ $yaml->{$hostname}->{system} } ) {
 	}
 	
 	# remove old backups
-	if(check_backup($server_name)) {
+	if(check_backup($backup_type,$server_name)) {
 		system("$rdiff -r $remove_older_than $server_name");
 	}
 } # system backups
@@ -80,21 +93,18 @@ foreach my $server_name ( @{ $yaml->{$hostname}->{system} } ) {
 # users backups
 foreach my $server_name ( @{ $yaml->{$hostname}->{users} } ) {
 	$debug and print "users backup => $server_name\n";	
-
-	# db
-	my $dbh = DBI->connect("dbi:mysql:rootnode;mysql_read_default_file=/root/.my.system.cnf",undef,undef,{ RaiseError => 1, AutoCommit => 1 });
-	my $db_backup_users = $dbh->prepare('SELECT login FROM uids WHERE block=0 AND del=0 ORDER BY login');
-	my $db_remove_users = $dbh->prepare('SELECT login FROM uids WHERE del=1 ORDER BY login');
 	
+	my $backup_type='users';
+
 	# create backup
 	$db_backup_users->execute;
 	while(my($user_name) = $db_backup_users->fetchrow_array) {
 		$debug and print $user_name.'...';
 		
-		my $backup_path="$backup_dir/users/$user_name";
+		my $backup_path="$backup_dir/$backup_type/$user_name";
 
 		# check for current backup
-		if(check_backup($server_name, $user_name)) {
+		if(check_backup($backup_type, $server_name, $user_name)) {
 			$debug and print "current\n";
 			next;
 		}
@@ -121,9 +131,33 @@ foreach my $server_name ( @{ $yaml->{$hostname}->{users} } ) {
 	# remove old backups
 	$db_backup_users->execute;
 	while(my($user_name) = $db_backup_users->fetchrow_array) {
-		if(check_backup($server_name, $user_name)) {
+		if(check_backup($backup_type, $server_name, $user_name)) {
 			system("$rdiff -r $remove_older_than -u $user_name $server_name");
 		}
 	}
 } # users backups
 
+# mysql backups
+foreach my $server_name ( @{ $yaml->{$hostname}->{mysql} } ) {
+	$debug and print "mysql backup => $server_name\n";
+
+	my $backup_type='mysql';
+	
+	$db_backup_users->execute;
+	while(my($user_name, $user_id) = $db_backup_users->fetchrow_array) {
+		$debug and print $user_name.'...';
+
+		my $backup_path = "$backup_dir/$backup_type/$user_name";	
+		
+		# check for current backup
+		if(check_backup($backup_type, $server_name, $user_name)) {
+			$debug and print "current\n";
+			next;
+		}
+
+		# mysqldump
+		system("$mysqldump $user_id $server_name");
+		system("$rdiff -m $user_name $server_name");
+	}
+	
+} # mysql backups
